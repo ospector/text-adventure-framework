@@ -1,0 +1,30 @@
+html { height:100% }
+body { height:95% }
+div#stdout {
+    height: 85%;
+    border: 1px solid black;
+    border-radius: 6px;
+    padding: 3px;
+    margin-bottom: 5px;
+    overflow:auto;
+    text-align: right;
+    direction: rtl;
+}
+
+div.player {
+  margin-top: 4px;
+  font-weight: bold;
+}
+
+div.game {
+  background-color: #ffffdd;
+}
+
+input#stdin {
+    width: 99%;
+    border-radius: 5px;
+    border: 1px solid lightblue;
+    padding: 3px;
+    text-align: right;
+    direction: rtl;
+}
