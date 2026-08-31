@@ -6,8 +6,8 @@ your family during a museum tour and have to find your way out of King Edward's
 cellars.
 
 Everything runs in the browser. There is no build step, no package manager, no
-server-side code and no external libraries — just five files loaded by a single
-`index.html`.
+server-side code and no external libraries — just five files and one image,
+loaded by a single `index.html`.
 
 The repository is deliberately split in two halves:
 
@@ -77,7 +77,8 @@ back resumes where you left off. `ריסט` wipes the save and restarts.
 | File | Role |
 | --- | --- |
 | `index.html` | The whole page: an output `div#stdout`, an `input#stdin`, and the four scripts. **Load order matters** — `constants.js` and `display-strings.js` define data that `framework.js` reads at `init()`. |
-| `style.css` | Layout and RTL direction for the two panes, plus the `.player` / `.game` styling of each output line. |
+| `style.css` | Layout and RTL direction for the two panes, plus the `.player` / `.game` styling of each output line. Also sets the page background and the near-opaque backdrops that keep the panes readable over it. |
+| `assets/background.svg` | The page background: a greyscale medieval castle, hand-authored as vector so it scales to any screen without tiling. Purely decorative — nothing in the code refers to it except `style.css`. |
 | `constants.js` | The map. A single `constants.map` object: room id → its exits (`n`, `s`, `e`, `w`) → neighbouring room id. Pure data, no logic. |
 | `display-strings.js` | All player-visible prose, as one big template literal named `messages`. Blocks are delimited by lines starting with `=`, e.g. `=entry` followed by that room's description. |
 | `framework.js` | The engine. Builds the `game` object, parses `messages` into `displayStrings`, listens for <kbd>Enter</kbd>, and calls into the game via `prepareGame(game)` and `makeATurn(game)`. Also owns persistence: `game.data` is JSON-serialised into `localStorage` under the key `game` after every turn. |
@@ -262,7 +263,8 @@ which is truthy for `-1` (not found); it should be `!== -1`.
 ```
 .
 ├── index.html          page shell and script load order
-├── style.css           RTL layout and output styling
+├── style.css           RTL layout, output styling and the page background
+├── assets/             background.svg, the greyscale castle backdrop
 ├── constants.js        the map
 ├── display-strings.js  all player-visible text
 ├── framework.js        engine: I/O, message parsing, save/load
