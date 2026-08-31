@@ -50,6 +50,12 @@ function declarations(selector) {
   return out;
 }
 
+test('the stylesheet is flat, as the parser above assumes', () => {
+  const atRules = [...new Set([...stripComments(CSS).matchAll(/@[\w-]+/g)].map((m) => m[0]))];
+  assert.deepStrictEqual(atRules, [],
+    'declarations() flattens nested at-rules; conditional rules need a real parser');
+});
+
 // --- colour ---------------------------------------------------------------
 
 function parseHex(hex) {
@@ -176,8 +182,10 @@ test('the background covers the whole screen without tiling or gaps', () => {
   assert.equal(page.get('background-size'), 'cover', 'the image must cover the screen');
   assert.ok(page.get('background-position'), 'the crop should be positioned deliberately');
 
-  // `fixed` makes the painting area the viewport. Without it the area is the
-  // element box, and this page sizes body to 95%, which would leave a strip.
+  // `fixed` pins the painting area to the viewport. html is already 100% tall
+  // so this is belt and braces, but it keeps the guarantee if the document
+  // ever grows past one screen, where a scrolled-to area would otherwise show
+  // bare fallback colour.
   assert.equal(page.get('background-attachment'), 'fixed');
 });
 

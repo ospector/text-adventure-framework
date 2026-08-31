@@ -6,8 +6,8 @@ your family during a museum tour and have to find your way out of King Edward's
 cellars.
 
 Everything runs in the browser. There is no build step, no package manager, no
-server-side code and no external libraries — just five files and one image,
-loaded by a single `index.html`.
+server-side code and no external libraries — just five files loaded by a single
+`index.html`, plus the background image that `style.css` pulls in.
 
 The repository is deliberately split in two halves:
 
