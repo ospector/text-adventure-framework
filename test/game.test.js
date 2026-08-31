@@ -13,17 +13,27 @@ const { map, messageKeys } = loadData();
 const START = 'entry';
 const OPPOSITE = { n: 's', s: 'n', e: 'w', w: 'e' };
 
-/** Commands that walk the intended solution from the entry hall to the exit. */
+// Legs of the intended solution, shared by the tests that need to get somewhere
+// before they can assert anything.
+const TO_TORCH = [
+  'לך מזרח', 'קח מפתח',        // the store key, in the office
+  'לך מערב', 'לך צפון', 'פתח',  // unlock the warehouse door
+  'לך מזרח', 'קח לפיד',
+];
+const TO_LIGHTER = ['לך מערב', 'לך מערב', 'קח מצית'];
+const TO_DARK1 = ['לך מזרח', 'לך דרום', 'לך דרום', 'לך מזרח'];
 const WALKTHROUGH = [
-  'לך מזרח', 'קח מפתח',                       // the store key, in the office
-  'לך מערב', 'לך צפון', 'פתח',                 // unlock the warehouse door
-  'לך מזרח', 'קח לפיד',                        // the torch
-  'לך מערב', 'לך מערב', 'קח מצית',             // the lighter
+  ...TO_TORCH, ...TO_LIGHTER,
   'הדלק לפיד',                                 // light up, so the dark rooms work
-  'לך מזרח', 'לך דרום', 'לך דרום',
-  'לך מזרח', 'לך דרום', 'לך מערב', 'קח מפתח',  // the main key, in the dark
+  ...TO_DARK1,
+  'לך דרום', 'לך מערב', 'קח מפתח',             // the main key, in the dark
   'לך מערב', 'פתח', 'לך דרום',                 // unlock the exit and leave
 ];
+
+/** Types each command in turn; arrays are flattened, so legs can be passed whole. */
+function play(game, ...commands) {
+  for (const command of commands.flat()) game.say(command);
+}
 
 test('the map', async (t) => {
   await t.test('every exit leads to a room that exists', () => {
@@ -155,11 +165,20 @@ test('looking', async (t) => {
     }
   });
 
-  await t.test('a dark room stays dark until you have light', () => {
+  await t.test('a dark room shows nothing until you have light', () => {
     const game = boot();
-    ['לך דרום', 'לך מזרח'].forEach((c) => game.say(c)); // portrait, then dark1
+    play(game, 'לך דרום', 'לך מזרח'); // portrait, then dark1
     assert.strictEqual(game.where(), 'dark1');
     assert.match(game.say('תסתכל'), /חושך/);
+  });
+
+  await t.test('a lit torch reveals the same room', () => {
+    const game = boot();
+    play(game, TO_TORCH, TO_LIGHTER, 'הדלק לפיד', TO_DARK1);
+    assert.strictEqual(game.where(), 'dark1');
+    const reply = game.say('תסתכל');
+    assert.doesNotMatch(reply, /חושך/);
+    assert.match(reply, /דב קוטב/); // the taxidermy room's description
   });
 });
 
@@ -179,7 +198,7 @@ test('taking and using items', async (t) => {
 
   await t.test('the right key unlocks the door in that room', () => {
     const game = boot();
-    ['לך מזרח', 'קח מפתח', 'לך מערב', 'לך צפון'].forEach((c) => game.say(c));
+    play(game, 'לך מזרח', 'קח מפתח', 'לך מערב', 'לך צפון');
     assert.match(game.say('פתח'), /הדלת פתוחה/);
     assert.strictEqual(game.data().locked['vilon-e'], false);
   });
@@ -190,11 +209,11 @@ test('taking and using items', async (t) => {
 
   await t.test('the torch needs the lighter, and lights the dark rooms', () => {
     const game = boot();
-    ['לך מזרח', 'קח מפתח', 'לך מערב', 'לך צפון', 'פתח', 'לך מזרח', 'קח לפיד'].forEach((c) => game.say(c));
+    play(game, TO_TORCH);
     assert.match(game.say('הדלק לפיד'), /חסר לך משהו/); // no lighter yet
     assert.strictEqual(game.data().haveLight, false);
 
-    ['לך מערב', 'לך מערב', 'קח מצית'].forEach((c) => game.say(c));
+    play(game, TO_LIGHTER);
     assert.match(game.say('הדלק לפיד'), /עכשיו יש אור/);
     assert.strictEqual(game.data().haveLight, true);
   });
@@ -213,8 +232,7 @@ test('taking and using items', async (t) => {
   // The first item in hand is therefore always the one dropped. Should be `!== -1`.
   await t.test('dropping names the item to drop', { skip: 'known bug: leave() drops the first item in hand' }, () => {
     const game = boot();
-    ['לך מזרח', 'קח מפתח', 'לך מערב', 'לך צפון', 'פתח', 'לך מזרח', 'קח לפיד', 'לך מערב', 'לך מערב', 'קח מצית']
-      .forEach((c) => game.say(c));
+    play(game, TO_TORCH, TO_LIGHTER);
     assert.deepStrictEqual(game.data().inhands.map((i) => i.name), ['torch', 'lighter']);
     game.say('זרוק מצית');
     assert.deepStrictEqual(game.data().inhands.map((i) => i.name), ['torch']);
@@ -227,7 +245,7 @@ test('an unknown command is rejected', () => {
 
 test('the walkthrough in the README reaches the exit', () => {
   const game = boot();
-  for (const command of WALKTHROUGH) game.say(command);
+  play(game, WALKTHROUGH);
   assert.strictEqual(game.where(), 'win');
   assert.deepStrictEqual(game.data().locked, { 'vilon-e': false, 'exit-s': false });
 });

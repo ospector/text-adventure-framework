@@ -9,9 +9,15 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const { ROOT, read } = require('./harness.js');
+const { ROOT, loadData, read } = require('./harness.js');
 
 const README = read('README.md');
+
+/** Every exit direction the map actually uses, e.g. n, s, e, w. */
+function exitKeys() {
+  const { map } = loadData();
+  return [...new Set(Object.values(map).flatMap((exits) => Object.keys(exits)))].sort();
+}
 
 /** The body of a `## Heading` section, up to the next heading of the same level. */
 function section(title) {
@@ -109,10 +115,11 @@ test('the documented direction words are the ones the parser recognises', () => 
   const directions = [...section('How to play')
     .matchAll(/`([^`]+)`\s*\((?:north|south|east|west)\)/g)].map((m) => m[1]);
 
+  // getDirection matches on a prefix, so each documented word must start with one.
+  const prefixes = [...source.matchAll(/indexOf\("([^"]+)"\) !== -1\) dir=/g)].map((m) => m[1]);
+
   assert.ok(directions.length >= 4, 'the four compass directions should be documented');
   for (const word of directions) {
-    // getDirection matches on a prefix, so the documented word must start with one.
-    const prefixes = [...source.matchAll(/indexOf\("([^"]+)"\) !== -1\) dir=/g)].map((m) => m[1]);
     assert.ok(
       prefixes.some((p) => word.startsWith(p)),
       `README documents the direction "${word}", which getDirection() ignores`,
@@ -126,7 +133,7 @@ test('the engine API the README describes exists in framework.js', () => {
     assert.match(framework, new RegExp(`${member}\\s*:\\s*function`), `game.output.${member} is documented but missing`);
   }
   const keyFiles = section('Key files');
-  const storageKey = read('framework.js').match(/STATE_KEY\s*=\s*"([^"]+)"/)[1];
+  const storageKey = framework.match(/STATE_KEY\s*=\s*"([^"]+)"/)[1];
   assert.ok(
     keyFiles.includes(`\`${storageKey}\``),
     `the README should name the localStorage key ("${storageKey}")`,
@@ -143,8 +150,11 @@ test('the hooks named in the use-case sections are the ones the framework calls'
 
 test('the "Changing the map" section points at the real data', () => {
   const body = section('Changing the map');
+  const documented = new Set(codeSpans(body));
   assert.ok(body.includes('constants.js'), 'should name the file the map lives in');
-  assert.match(body, /`n`.*`s`.*`e`.*`w`|n.*s.*e.*w/, 'should name the exit directions');
+  for (const dir of exitKeys()) {
+    assert.ok(documented.has(dir), `the exit direction \`${dir}\` is used by the map but not documented`);
+  }
   assert.ok(body.includes('display-strings.js'), 'should explain where room descriptions go');
   assert.ok(body.includes('locked'), 'should explain locked doors');
   assert.ok(body.includes('dark'), 'should explain the darkness rule');

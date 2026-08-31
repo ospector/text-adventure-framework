@@ -102,7 +102,7 @@ Everything the game code touches hangs off one object:
 ## Changing the map
 
 The map lives entirely in `constants.js`. Each key is a room id; each value maps
-a direction to the room you arrive in.
+an exit direction — `n`, `s`, `e` or `w` — to the room you arrive in through it.
 
 ```js
 var constants = {

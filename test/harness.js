@@ -10,21 +10,16 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const ROOT = path.join(__dirname, '..');
+const ENTER = 13;
 
-const SOURCE_FILES = [
-  'constants.js',
-  'display-strings.js',
-  'framework.js',
-  'game.js',
-];
+const SOURCE_FILES = ['constants.js', 'display-strings.js', 'framework.js', 'game.js'];
 
 function read(name) {
   return fs.readFileSync(path.join(ROOT, name), 'utf8');
 }
 
-function fakeElement(id) {
+function fakeElement() {
   return {
-    id,
     value: '',
     className: '',
     innerHTML: '',
@@ -48,11 +43,10 @@ function fakeLocalStorage() {
     getItem: (k) => (store.has(k) ? store.get(k) : null),
     setItem: (k, v) => { store.set(k, String(v)); },
     removeItem: (k) => { store.delete(k); },
-    get size() { return store.size; },
   };
 }
 
-// Strips the markup the output buffer injects, so tests can assert on prose.
+/** Strips the markup the output buffer injects, so tests can assert on prose. */
 function plain(html) {
   return String(html).replace(/<br\/?>/g, '\n').trim();
 }
@@ -64,8 +58,8 @@ function plain(html) {
  * plain text. `where()` is the player's current room id.
  */
 function boot() {
-  const stdout = fakeElement('stdout');
-  const stdin = fakeElement('stdin');
+  const stdout = fakeElement();
+  const stdin = fakeElement();
   const localStorage = fakeLocalStorage();
 
   const document = {
@@ -79,20 +73,21 @@ function boot() {
   }
   context.init();
 
+  const typists = stdin.listeners.keydown ?? [];
+  if (typists.length === 0) throw new Error('init() registered no Enter-key listener');
+
   const lastGameLine = () => {
-    const game = stdout.children.filter((c) => c.className === 'game');
-    return game.length ? plain(game[game.length - 1].innerHTML) : '';
+    const spoken = stdout.children.filter((c) => c.className === 'game');
+    return spoken.length ? plain(spoken[spoken.length - 1].innerHTML) : '';
   };
 
   return {
     context,
-    stdout,
-    stdin,
     localStorage,
-    greeting: lastGameLine(),
+    // Goes through the real keydown handler, so the input wiring is covered too.
     say(command) {
       stdin.value = command;
-      context.turn(command);
+      for (const onKeydown of typists) onKeydown({ keyCode: ENTER });
       return lastGameLine();
     },
     where: () => context.game.data.location,
@@ -102,19 +97,13 @@ function boot() {
   };
 }
 
-/** The raw data files, evaluated on their own (no DOM needed). */
+/** The map and message keys, as the game itself parsed them. */
 function loadData() {
-  const context = vm.createContext({});
-  vm.runInContext(read('constants.js'), context, { filename: 'constants.js' });
-  vm.runInContext(read('display-strings.js'), context, { filename: 'display-strings.js' });
-
-  // Same parse framework.js does: blocks are delimited by lines starting with '='.
-  const messageKeys = context.messages
-    .split('\n')
-    .filter((line) => line.startsWith('='))
-    .map((line) => line.slice(1));
-
-  return { map: context.map ?? context.constants.map, messageKeys };
+  const { context } = boot();
+  return {
+    map: context.game.constants.map,
+    messageKeys: Object.keys(context.displayStrings),
+  };
 }
 
-module.exports = { boot, loadData, plain, read, ROOT, SOURCE_FILES };
+module.exports = { boot, loadData, read, ROOT };
