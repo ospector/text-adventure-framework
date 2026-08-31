@@ -27,7 +27,8 @@ alone.
 
 ## Installing and running locally
 
-You need nothing but a browser and a copy of the files.
+There is nothing to build and nothing to install — you need a browser, a copy
+of the files, and any static HTTP server to serve them.
 
 ```bash
 git clone https://github.com/ospector/text-adventure-framework.git
@@ -166,7 +167,7 @@ The room `win` is the goal and has no exits.
 ## Adding commands
 
 Commands are dispatched in `makeATurn()` in `game.js`, which takes the **first
-whitespace-separated word** of the input and runs it through a `switch`. Any
+space-separated word** of the input and runs it through a `switch`. Any
 word not listed falls through to `dontUnderstand()`.
 
 To add a verb — say an inventory command:
