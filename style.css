@@ -1,7 +1,22 @@
-html { height:100% }
+html {
+    height: 100%;
+    /* The colour is the fallback: if the SVG cannot be fetched the page still
+       renders as a light backdrop with legible text. `cover` + `no-repeat`
+       keep the scene unbroken and untiled, and `fixed` anchors the painting
+       area to the viewport so it fills the screen at any size. */
+    background-color: #e9e9e9;
+    background-image: url("assets/background.svg");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    background-attachment: fixed;
+}
 body { height:95% }
 div#stdout {
     height: 85%;
+    /* Near-opaque so the castle reads as a faint watermark behind the text
+       while black-on-white contrast stays well above the 4.5:1 minimum. */
+    background-color: rgba(255, 255, 255, 0.88);
     border: 1px solid black;
     border-radius: 6px;
     padding: 3px;
@@ -22,6 +37,7 @@ div.game {
 
 input#stdin {
     width: 99%;
+    background-color: rgba(255, 255, 255, 0.92);
     border-radius: 5px;
     border: 1px solid lightblue;
     padding: 3px;
