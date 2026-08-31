@@ -30,6 +30,13 @@ const WALKTHROUGH = [
   'לך מערב', 'פתח', 'לך דרום',                 // unlock the exit and leave
 ];
 
+/** Splits a "<room>-<direction>" door key; room ids may contain hyphens. */
+function parseDoor(key) {
+  const parts = key.match(/^(.+)-([nsew])$/);
+  assert.ok(parts, `door key "${key}" is not of the form "<room>-<direction>"`);
+  return { room: parts[1], dir: parts[2] };
+}
+
 /** Types each command in turn; arrays are flattened, so legs can be passed whole. */
 function play(game, ...commands) {
   for (const command of commands.flat()) game.say(command);
@@ -47,6 +54,8 @@ test('the map', async (t) => {
   await t.test('exits are bidirectional, except out of terminal rooms', () => {
     for (const [room, exits] of Object.entries(map)) {
       for (const [dir, target] of Object.entries(exits)) {
+        assert.ok(OPPOSITE[dir], `${room} has an exit "${dir}", which is not one of n/s/e/w`);
+        if (!map[target]) continue; // reported by the previous subtest
         if (Object.keys(map[target]).length === 0) continue; // the goal room is one-way
         assert.strictEqual(
           map[target][OPPOSITE[dir]], room,
@@ -105,7 +114,7 @@ test('the items', async (t) => {
 test('locked doors name a real room and direction', () => {
   const { locked } = boot().data();
   for (const key of Object.keys(locked)) {
-    const [room, dir] = key.split('-');
+    const { room, dir } = parseDoor(key);
     assert.ok(map[room], `locked door "${key}" names a room that does not exist`);
     assert.ok(map[room][dir], `locked door "${key}" names a direction with no door`);
   }
@@ -114,7 +123,7 @@ test('locked doors name a real room and direction', () => {
 test('each locked door has a key somewhere', () => {
   const { locked, items } = boot().data();
   for (const key of Object.keys(locked).filter((k) => locked[k])) {
-    const [room, dir] = key.split('-');
+    const { room, dir } = parseDoor(key);
     assert.ok(
       items.some((i) => i.opensAt === room && i.door === dir),
       `door "${key}" is locked but no item opens it`,
@@ -207,7 +216,7 @@ test('taking and using items', async (t) => {
     assert.match(boot().say('פתח'), /אין לי מפתח/);
   });
 
-  await t.test('the torch needs the lighter, and lights the dark rooms', () => {
+  await t.test('the torch needs the lighter to light it', () => {
     const game = boot();
     play(game, TO_TORCH);
     assert.match(game.say('הדלק לפיד'), /חסר לך משהו/); // no lighter yet
@@ -243,7 +252,7 @@ test('an unknown command is rejected', () => {
   assert.match(boot().say('לרקוד'), /לא הבנתי/);
 });
 
-test('the walkthrough in the README reaches the exit', () => {
+test('the intended solution reaches the exit', () => {
   const game = boot();
   play(game, WALKTHROUGH);
   assert.strictEqual(game.where(), 'win');
@@ -254,8 +263,9 @@ test('progress survives a reload', async (t) => {
   await t.test('state is written to localStorage after every turn', () => {
     const game = boot();
     game.say('לך מזרח');
-    const saved = JSON.parse(game.localStorage.getItem('game'));
-    assert.strictEqual(saved.location, 'office');
+    const saved = game.localStorage.getItem('game'); // the key the README documents
+    assert.ok(saved, 'nothing was saved under the documented key "game"');
+    assert.strictEqual(JSON.parse(saved).location, 'office');
   });
 
   await t.test('reset clears the save and starts over', () => {

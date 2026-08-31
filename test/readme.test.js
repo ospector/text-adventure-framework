@@ -11,7 +11,10 @@ const path = require('node:path');
 
 const { ROOT, loadData, read } = require('./harness.js');
 
-const README = read('README.md');
+const README_PATH = path.join(ROOT, 'README.md');
+const README = fs.existsSync(README_PATH) ? read('README.md') : '';
+const GAME_JS = read('game.js');
+const FRAMEWORK_JS = read('framework.js');
 
 /** Every exit direction the map actually uses, e.g. n, s, e, w. */
 function exitKeys() {
@@ -21,10 +24,9 @@ function exitKeys() {
 
 /** The body of a `## Heading` section, up to the next heading of the same level. */
 function section(title) {
-  const pattern = new RegExp(`^## ${title}$([\\s\\S]*?)(?=^## |$(?![\\s\\S]))`, 'm');
-  const match = README.match(pattern);
-  assert.ok(match, `README is missing a "## ${title}" section`);
-  return match[1];
+  const body = README.split(/^## /m).slice(1).find((s) => s.startsWith(`${title}\n`));
+  assert.ok(body, `README is missing a "## ${title}" section`);
+  return body;
 }
 
 /** Every `backticked` token in the given text. */
@@ -33,8 +35,7 @@ function codeSpans(text) {
 }
 
 test('a README.md exists at the repository root', () => {
-  const file = path.join(ROOT, 'README.md');
-  assert.ok(fs.existsSync(file), 'README.md not found at the repository root');
+  assert.ok(fs.existsSync(README_PATH), 'README.md not found at the repository root');
   assert.ok(README.trim().length > 0, 'README.md is empty');
 });
 
@@ -95,7 +96,7 @@ test('every script index.html loads is explained in "Key files"', () => {
 
 test('the documented commands are exactly the commands the game implements', () => {
   const implemented = new Set(
-    [...read('game.js').matchAll(/case '([^']+)':/g)].map((m) => m[1]),
+    [...GAME_JS.matchAll(/case '([^']+)':/g)].map((m) => m[1]),
   );
 
   const rows = section('How to play').split('\n').filter((line) => line.startsWith('|'));
@@ -110,13 +111,12 @@ test('the documented commands are exactly the commands the game implements', () 
 });
 
 test('the documented direction words are the ones the parser recognises', () => {
-  const source = read('game.js');
   // Written as: `\u05e6\u05e4\u05d5\u05df` (north), `\u05d3\u05e8\u05d5\u05dd` (south), ...
   const directions = [...section('How to play')
     .matchAll(/`([^`]+)`\s*\((?:north|south|east|west)\)/g)].map((m) => m[1]);
 
   // getDirection matches on a prefix, so each documented word must start with one.
-  const prefixes = [...source.matchAll(/indexOf\("([^"]+)"\) !== -1\) dir=/g)].map((m) => m[1]);
+  const prefixes = [...GAME_JS.matchAll(/indexOf\("([^"]+)"\) !== -1\) dir=/g)].map((m) => m[1]);
 
   assert.ok(directions.length >= 4, 'the four compass directions should be documented');
   for (const word of directions) {
@@ -128,22 +128,20 @@ test('the documented direction words are the ones the parser recognises', () => 
 });
 
 test('the engine API the README describes exists in framework.js', () => {
-  const framework = read('framework.js');
   for (const member of ['addLine', 'addText', 'addMessage', 'reset']) {
-    assert.match(framework, new RegExp(`${member}\\s*:\\s*function`), `game.output.${member} is documented but missing`);
+    assert.match(FRAMEWORK_JS, new RegExp(`${member}\\s*:\\s*function`), `game.output.${member} is documented but missing`);
   }
   const keyFiles = section('Key files');
-  const storageKey = framework.match(/STATE_KEY\s*=\s*"([^"]+)"/)[1];
+  const storageKey = FRAMEWORK_JS.match(/STATE_KEY\s*=\s*"([^"]+)"/)[1];
   assert.ok(
     keyFiles.includes(`\`${storageKey}\``),
     `the README should name the localStorage key ("${storageKey}")`,
   );
 });
 
-test('the hooks named in the use-case sections are the ones the framework calls', () => {
-  const framework = read('framework.js');
+test('the hooks the README names are the ones the framework calls', () => {
   for (const hook of ['prepareGame', 'makeATurn']) {
-    assert.match(framework, new RegExp(`${hook}\\(game\\)`), `${hook} is documented but not called`);
+    assert.match(FRAMEWORK_JS, new RegExp(`${hook}\\(game\\)`), `${hook} is documented but not called`);
     assert.ok(README.includes(hook), `${hook} should be documented`);
   }
 });
