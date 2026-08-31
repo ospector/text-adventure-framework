@@ -56,6 +56,7 @@
 
   <!-- left curtain wall -->
   <rect x="250" y="620" width="220" height="150" fill="#3a3a3a"/>
+  <!-- crenellations: merlons sit flush on the wall head -->
   <g fill="#3a3a3a">
     <rect x="259" y="596" width="26" height="24"/>
     <rect x="303" y="596" width="26" height="24"/>
@@ -66,6 +67,7 @@
 
   <!-- right curtain wall -->
   <rect x="1150" y="640" width="250" height="130" fill="#3a3a3a"/>
+  <!-- crenellations -->
   <g fill="#3a3a3a">
     <rect x="1174" y="616" width="26" height="24"/>
     <rect x="1218" y="616" width="26" height="24"/>
@@ -87,6 +89,7 @@
 
   <!-- keep -->
   <rect x="600" y="430" width="400" height="340" fill="#2a2a2a"/>
+  <!-- crenellations -->
   <g fill="#2a2a2a">
     <rect x="616" y="404" width="32" height="26"/>
     <rect x="672" y="404" width="32" height="26"/>
@@ -96,6 +99,7 @@
     <rect x="896" y="404" width="32" height="26"/>
     <rect x="952" y="404" width="32" height="26"/>
   </g>
+  <!-- arrow-slit windows -->
   <g fill="#efefef" opacity="0.7">
     <rect x="656" y="486" width="14" height="44" rx="7"/>
     <rect x="736" y="486" width="14" height="44" rx="7"/>
@@ -117,6 +121,7 @@
 
   <!-- right tower -->
   <rect x="1020" y="360" width="130" height="410" fill="#303030"/>
+  <!-- crenellations -->
   <g fill="#303030">
     <rect x="1020" y="334" width="30" height="26"/>
     <rect x="1070" y="334" width="30" height="26"/>
