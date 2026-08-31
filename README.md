@@ -81,6 +81,7 @@ back resumes where you left off. `ריסט` wipes the save and restarts.
 | `display-strings.js` | All player-visible prose, as one big template literal named `messages`. Blocks are delimited by lines starting with `=`, e.g. `=entry` followed by that room's description. |
 | `framework.js` | The engine. Builds the `game` object, parses `messages` into `displayStrings`, listens for <kbd>Enter</kbd>, and calls into the game via `prepareGame(game)` and `makeATurn(game)`. Also owns persistence: `game.data` is JSON-serialised into `localStorage` under the key `game` after every turn. |
 | `game.js` | The game itself. `prepareGame()` sets up the starting state (location, items, locked doors); `makeATurn()` is a `switch` over the first word of the player's input that dispatches to the verb handlers below it. |
+| `test/` | The test suite — see [Tests](#tests). `harness.js` boots the game in a fake browser; the `*.test.js` files hold the tests. |
 | `plan.txt` | Scratch file, not used by the game. |
 
 ### The `game` object
@@ -122,9 +123,11 @@ To add a room — say a cellar east of the warehouse:
    cellar:    { w:"warehouse" },
    ```
 
-   Note that exits are *not* automatically bidirectional — nothing validates the
-   graph, so if you add `e:"cellar"` and forget `w:"warehouse"`, the player walks
-   in and can never walk out. Add both sides by hand.
+   Note that exits are *not* automatically bidirectional — the engine does not
+   validate the graph, so if you add `e:"cellar"` and forget `w:"warehouse"`, the
+   player walks in and can never walk out. Add both sides by hand; the
+   [test suite](#tests) checks this for you, along with exits that point at
+   rooms which do not exist and rooms with no description block.
 
 2. **Add a description** in `display-strings.js`, keyed by the room id:
 
@@ -229,6 +232,30 @@ original spot) and a `=<name>` block (its short name once it has been moved) in
 `display-strings.js`. The `=<name>-focus` blocks in that file are written but
 not yet read by any command — an obvious place to hang an "examine" verb.
 
+## Tests
+
+The suite covers two things: that the game still behaves the way
+[How to play](#how-to-play) describes, and that this README has not drifted from
+the code — the file names, commands, engine API and setup instructions
+documented above are all asserted against the source, so renaming a file or
+adding a verb without documenting it turns the suite red.
+
+There is still nothing to install: the runner ships with Node.js (verified on
+v22). From the repository root:
+
+```bash
+node --test
+```
+
+The tests drive the real `game.js` and `framework.js` by evaluating them in a vm
+context with a stubbed DOM and `localStorage`, so they exercise the same code
+the browser runs.
+
+One test is skipped rather than failing, to record a known bug: when you are
+holding more than one item, `זרוק` drops the first item in your hands instead of
+the one you named. The guard in `leave()` is `if (game.input.indexOf(item.uname))`,
+which is truthy for `-1` (not found); it should be `!== -1`.
+
 ## Project layout
 
 ```
@@ -239,5 +266,6 @@ not yet read by any command — an obvious place to hang an "examine" verb.
 ├── display-strings.js  all player-visible text
 ├── framework.js        engine: I/O, message parsing, save/load
 ├── game.js             this game: initial state and commands
+├── test/               the test suite, run with `node --test`
 └── plan.txt            scratch, unused
 ```
