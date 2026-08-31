@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Decorative background for the main screen: a medieval castle at dusk, drawn
+  in greyscale only. Hand-authored vector rather than a photo so it stays in
+  the repository as reviewable text, scales to any resolution without tiling,
+  and needs no build step or network access.
+
+  The upper half is deliberately light and low-contrast: the output pane sits
+  over it, so dark shapes are kept near the bottom edge.
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 1600 900"
+     preserveAspectRatio="xMidYMid slice"
+     role="presentation">
+
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbfbfb"/>
+      <stop offset="55%" stop-color="#ededed"/>
+      <stop offset="100%" stop-color="#cfcfcf"/>
+    </linearGradient>
+    <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- sky -->
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <circle cx="1330" cy="190" r="180" fill="url(#moonGlow)"/>
+  <circle cx="1330" cy="190" r="68" fill="#ffffff"/>
+  <circle cx="1352" cy="170" r="10" fill="#f0f0f0"/>
+  <circle cx="1310" cy="212" r="14" fill="#f2f2f2"/>
+
+  <!-- clouds -->
+  <g fill="#e4e4e4">
+    <ellipse cx="300" cy="170" rx="150" ry="30"/>
+    <ellipse cx="390" cy="150" rx="95" ry="24"/>
+    <ellipse cx="980" cy="105" rx="130" ry="24"/>
+    <ellipse cx="640" cy="255" rx="110" ry="20"/>
+  </g>
+
+  <!-- birds -->
+  <g fill="none" stroke="#8a8a8a" stroke-width="3" stroke-linecap="round">
+    <path d="M170 300 l18 -12 l18 12"/>
+    <path d="M230 268 l14 -10 l14 10"/>
+    <path d="M1140 330 l16 -11 l16 11"/>
+  </g>
+
+  <!-- distant ridge -->
+  <polygon fill="#c6c6c6"
+           points="0,770 180,600 320,690 470,540 640,700 820,580 1000,700 1180,600 1360,690 1600,610 1600,770"/>
+  <!-- nearer hillside -->
+  <polygon fill="#a9a9a9"
+           points="0,770 260,690 520,730 760,668 1040,722 1320,678 1600,728 1600,770"/>
+
+  <!-- left curtain wall -->
+  <rect x="250" y="620" width="220" height="150" fill="#3a3a3a"/>
+  <g fill="#3a3a3a">
+    <rect x="259" y="596" width="26" height="24"/>
+    <rect x="303" y="596" width="26" height="24"/>
+    <rect x="347" y="596" width="26" height="24"/>
+    <rect x="391" y="596" width="26" height="24"/>
+    <rect x="435" y="596" width="26" height="24"/>
+  </g>
+
+  <!-- right curtain wall -->
+  <rect x="1150" y="640" width="250" height="130" fill="#3a3a3a"/>
+  <g fill="#3a3a3a">
+    <rect x="1174" y="616" width="26" height="24"/>
+    <rect x="1218" y="616" width="26" height="24"/>
+    <rect x="1262" y="616" width="26" height="24"/>
+    <rect x="1306" y="616" width="26" height="24"/>
+    <rect x="1350" y="616" width="26" height="24"/>
+  </g>
+
+  <!-- left tower, conical roof -->
+  <rect x="470" y="330" width="110" height="440" fill="#303030"/>
+  <polygon fill="#242424" points="458,332 525,238 592,332"/>
+  <line x1="525" y1="238" x2="525" y2="192" stroke="#242424" stroke-width="5"/>
+  <polygon fill="#242424" points="527,196 588,212 527,228"/>
+  <g fill="#efefef" opacity="0.75">
+    <rect x="504" y="400" width="12" height="38" rx="6"/>
+    <rect x="534" y="400" width="12" height="38" rx="6"/>
+    <rect x="519" y="520" width="12" height="38" rx="6"/>
+  </g>
+
+  <!-- keep -->
+  <rect x="600" y="430" width="400" height="340" fill="#2a2a2a"/>
+  <g fill="#2a2a2a">
+    <rect x="616" y="404" width="32" height="26"/>
+    <rect x="672" y="404" width="32" height="26"/>
+    <rect x="728" y="404" width="32" height="26"/>
+    <rect x="784" y="404" width="32" height="26"/>
+    <rect x="840" y="404" width="32" height="26"/>
+    <rect x="896" y="404" width="32" height="26"/>
+    <rect x="952" y="404" width="32" height="26"/>
+  </g>
+  <g fill="#efefef" opacity="0.7">
+    <rect x="656" y="486" width="14" height="44" rx="7"/>
+    <rect x="736" y="486" width="14" height="44" rx="7"/>
+    <rect x="850" y="486" width="14" height="44" rx="7"/>
+    <rect x="930" y="486" width="14" height="44" rx="7"/>
+    <rect x="656" y="600" width="14" height="44" rx="7"/>
+    <rect x="930" y="600" width="14" height="44" rx="7"/>
+  </g>
+
+  <!-- gatehouse arch and portcullis -->
+  <path d="M740 770 L740 680 A60 60 0 0 1 860 680 L860 770 Z" fill="#0f0f0f"/>
+  <g stroke="#454545" stroke-width="3">
+    <line x1="770" y1="770" x2="770" y2="648"/>
+    <line x1="800" y1="770" x2="800" y2="640"/>
+    <line x1="830" y1="770" x2="830" y2="648"/>
+    <line x1="742" y1="700" x2="858" y2="700"/>
+    <line x1="742" y1="740" x2="858" y2="740"/>
+  </g>
+
+  <!-- right tower -->
+  <rect x="1020" y="360" width="130" height="410" fill="#303030"/>
+  <g fill="#303030">
+    <rect x="1020" y="334" width="30" height="26"/>
+    <rect x="1070" y="334" width="30" height="26"/>
+    <rect x="1120" y="334" width="30" height="26"/>
+  </g>
+  <line x1="1085" y1="334" x2="1085" y2="282" stroke="#242424" stroke-width="5"/>
+  <polygon fill="#242424" points="1087,286 1142,300 1087,314"/>
+  <g fill="#efefef" opacity="0.75">
+    <rect x="1058" y="420" width="12" height="40" rx="6"/>
+    <rect x="1100" y="420" width="12" height="40" rx="6"/>
+    <rect x="1079" y="545" width="12" height="40" rx="6"/>
+  </g>
+
+  <!-- foreground ground -->
+  <rect x="0" y="762" width="1600" height="138" fill="#171717"/>
+</svg>
